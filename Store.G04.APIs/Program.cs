@@ -28,7 +28,7 @@ namespace Store.G04.APIs
 
             builder.Services.AddScoped<IProductServices, ProductServices>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            builder.Services.AddAutoMapper(m => m.AddProfile(new ProductProfile()));
+            builder.Services.AddAutoMapper(m => m.AddProfile(new ProductProfile(builder.Configuration)));
 
 
             var app = builder.Build();
@@ -59,7 +59,7 @@ namespace Store.G04.APIs
 
             app.UseAuthorization();
 
-
+            app.UseStaticFiles();
             app.MapControllers();
 
             app.Run();

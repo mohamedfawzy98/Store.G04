@@ -3,6 +3,7 @@ using Store.G04.Core;
 using Store.G04.Core.Dtos;
 using Store.G04.Core.Dtos.Product;
 using Store.G04.Core.Entites;
+using Store.G04.Core.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace Store.G04.Services.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public ProductServices(IUnitOfWork unitOfWork , IMapper mapper)
+        public ProductServices(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -24,14 +25,18 @@ namespace Store.G04.Services.Services
         public async Task<IEnumerable<BrandTypeDto>> GetAllBrandAsync()
         {
             return _mapper.Map<IEnumerable<BrandTypeDto>>(await _unitOfWork.Repositiry<ProductBrand, int>().GetAllAsync());
-          
+
         }
 
-        public async Task<IEnumerable<ProductDto>> GetAllProductAsync()
+        public async Task<PagnationResponse<ProductDto>> GetAllProductAsync(string ? sort , int? brandid, int? typeid, int? pagesize, int? pageindex , string search)
         {
-            var prod = await _unitOfWork.Repositiry<Product, int>().GetAllAsync();
+            var spec = new ProductSpectifcation(sort , brandid , typeid, pagesize.Value, pageindex.Value , search);
+            var prod = await _unitOfWork.Repositiry<Product, int>().GetAllwithspecAsync(spec);
+            var productmapped = _mapper.Map<IEnumerable<ProductDto>>(prod);
 
-            return _mapper.Map<IEnumerable<ProductDto>>(prod);
+            var countspec = new ProductWithCount(sort, brandid, typeid, pagesize.Value, pageindex.Value , search);
+            var count = await _unitOfWork.Repositiry<Product, int>().GetCountAsync(countspec);
+            return new PagnationResponse<ProductDto>(pagesize.Value,pageindex.Value, count , productmapped);
         }
 
         public async Task<IEnumerable<BrandTypeDto>> GetAllTypeAsync()
@@ -41,6 +46,9 @@ namespace Store.G04.Services.Services
         }
 
         public async Task<ProductDto> GetProductById(int? id)
-        => _mapper.Map<ProductDto>(await _unitOfWork.Repositiry<Product, int>().GetAsync(id.Value));
+        {
+            var spec = new ProductSpectifcation(id.Value);
+            return _mapper.Map<ProductDto>(await _unitOfWork.Repositiry<Product, int>().GetwithspecAsync(spec));
+        }
     }
 }
