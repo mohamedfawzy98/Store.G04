@@ -4,9 +4,8 @@ using Store.G04.Core;
 
 namespace Store.G04.APIs.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductsController : ControllerBase
+    
+    public class ProductsController : BaseApiController
     {
         private readonly IProductServices _productServices;
 
